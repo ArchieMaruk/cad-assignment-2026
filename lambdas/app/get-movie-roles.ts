@@ -22,6 +22,10 @@ export const handler = async (
     return response(400, { message: "movieID must be a positive integer" });
   }
 
+   // Optional ?actor= filter:
+  // 1. Read the optional actor value from the query string.
+  // 2. Check it's a positive integer, otherwise return a 400 error.
+  // 3. If given, return only that actor's role in this movie.
   const actorParam = event.queryStringParameters?.actor;
   const actorId = parseId(actorParam);
   if (actorParam !== undefined && actorId === undefined) {
