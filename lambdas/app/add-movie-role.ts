@@ -9,6 +9,20 @@ export const handler = async (
   const body = parseJsonObject(event);
   if (isResponse(body)) return body;
 
+
+    // Check if every field is present and the correct type before saving.
+  const isPositiveInt = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
+  const isText = (v: unknown) => typeof v === "string" && v.trim() !== "";
+  const invalid = [
+    !isPositiveInt(body.movieId) && "movieId",
+    !isPositiveInt(body.actorId) && "actorId",
+    !isText(body.roleName) && "roleName",
+    !isText(body.roleDescription) && "roleDescription",
+  ].filter(Boolean);
+  if (invalid.length) {
+    return response(400, { message: `Missing or invalid fields: ${invalid.join(", ")}` });
+  }
+
   const role: Role = {
     movieId: body.movieId as number,
     actorId: body.actorId as number,
