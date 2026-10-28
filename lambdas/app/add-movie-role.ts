@@ -9,8 +9,7 @@ export const handler = async (
   const body = parseJsonObject(event);
   if (isResponse(body)) return body;
 
-
-    // Check if every field is present and the correct type before saving.
+  // Check every field is present and the right type before saving.
   const isPositiveInt = (v: unknown) => Number.isInteger(v) && (v as number) > 0;
   const isText = (v: unknown) => typeof v === "string" && v.trim() !== "";
   const invalid = [
@@ -31,7 +30,7 @@ export const handler = async (
   };
 
   try {
-    // Add the role only if both the movie and the actor exist
+    // Add the role only if both the movie and the actor exist.
     await ddb.send(
       new TransactWriteCommand({
         TransactItems: [
@@ -64,6 +63,12 @@ export const handler = async (
     );
     return response(201, { message: "Role added", data: role });
   } catch (err) {
+    // The transaction is cancelled if the movie or actor doesn't exist.
+    if ((err as Error).name === "TransactionCanceledException") {
+      return response(404, {
+        message: `Movie ${role.movieId} or actor ${role.actorId} not found`,
+      });
+    }
     console.error("DynamoDB error:", err);
     return response(500, { message: "Internal server error" });
   }
