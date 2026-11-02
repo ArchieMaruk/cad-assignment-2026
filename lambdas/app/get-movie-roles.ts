@@ -41,8 +41,10 @@ export const handler = async (
           Key: { PK: movieKey(movieId), SK: actorKey(actorId) },
         })
       );
-      const roles = roleResult.Item ? [toRole(roleResult.Item)] : [];
-      return response(200, { data: roles });
+            if (!roleResult.Item) {
+        return response(404, { message: `Actor ${actorId} has no role in movie ${movieId}` });
+      }
+      return response(200, { data: [toRole(roleResult.Item)] });
     }
 
     // if there is no actor query parameter, get all the roles for this movie
@@ -54,8 +56,12 @@ export const handler = async (
       })
     );
 
-    const resultItems = queryResult.Items ?? [];
-    return response(200, { data: resultItems.filter(isRoleItem).map(toRole) });
+        const roles = (queryResult.Items ?? []).filter(isRoleItem).map(toRole);
+    if (roles.length === 0) {
+      return response(404, { message: `No roles found for movie ${movieId}` });
+    }
+    return response(200, { data: roles });
+    
   } catch (err) {
     console.error("DynamoDB error:", err);
     return response(500, { message: "Internal server error" });
