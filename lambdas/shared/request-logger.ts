@@ -4,7 +4,11 @@ import type { APIGatewayProxyEvent } from 'aws-lambda';
 //   doconnor   /actors/4321?movie=1234
 export const logRequest = (event: APIGatewayProxyEvent): void => {
     // The authorizer lambda puts the Cognito username into the request context.
-  const username = event.requestContext.authorizer?.username ?? 'unknown';
+    // Users are identified by the authorizer; the admin uses an API key instead.
+  const username =
+    event.requestContext.authorizer?.username ??
+    (event.requestContext.identity?.apiKeyId ? 'admin' : 'unknown');
+  
   const params = Object.entries(event.queryStringParameters ?? {}).filter(
     (entry): entry is [string, string] => entry[1] !== undefined,
   );
