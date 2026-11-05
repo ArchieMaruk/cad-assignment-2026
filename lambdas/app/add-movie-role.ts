@@ -58,15 +58,24 @@ export const handler = async (
                 SK: actorKey(role.actorId),
                 ...role,
               },
+              // Don't overwrite an existing role for this movie and actor.
+              ConditionExpression: "attribute_not_exists(PK)",
             },
+          
           },
         ],
       })
     );
     return response(201, { message: "Role added", data: role });
-  } catch (err) {
-    // The transaction is cancelled if the movie or actor doesn't exist.
+  }   catch (err) {
     if ((err as Error).name === "TransactionCanceledException") {
+      // Reasons are in the same order as TransactItems: movie, actor, put.
+      const reasons = (err as { CancellationReasons?: { Code?: string }[] }).CancellationReasons ?? [];
+      if (reasons[2]?.Code === "ConditionalCheckFailed") {
+        return response(409, {
+          message: `Actor ${role.actorId} already has a role in movie ${role.movieId}`,
+        });
+      }
       return response(404, {
         message: `Movie ${role.movieId} or actor ${role.actorId} not found`,
       });
