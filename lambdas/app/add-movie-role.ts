@@ -20,8 +20,14 @@ export const handler = async (
     !isText(body.roleName) && "roleName",
     !isText(body.roleDescription) && "roleDescription",
   ].filter(Boolean);
-  if (invalid.length) {
-    return response(400, { message: `Missing or invalid fields: ${invalid.join(", ")}` });
+
+
+
+    // Only   4 Role fields are allowed in the body.
+  const allowedFields = ["movieId", "actorId", "roleName", "roleDescription"];
+  const extraFields = Object.keys(body).filter((key) => !allowedFields.includes(key));
+  if (extraFields.length) {
+    return response(400, { message: `Unexpected fields: ${extraFields.join(", ")}` });
   }
 
   const role: Role = {
