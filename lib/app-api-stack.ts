@@ -55,7 +55,7 @@ export class AppApiStack extends cdk.Stack {
     // Sample data, written once when the stack is created.
     const items = seedItems();
     if (items.length > 25) throw new Error('BatchWriteItem accepts at most 25 items');
-    const seeder = new cr.AwsCustomResource(this, 'SeedMovieCastData', {
+        new cr.AwsCustomResource(this, 'SeedMovieCastData', {
       onCreate: {
         service: 'DynamoDB',
         action: 'BatchWriteItem',
